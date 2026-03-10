@@ -29,7 +29,7 @@ export default function CountryDetailPage() {
         // Fetch the specific country
         const { data: countryData, error: err1 } = await supabase
           .from('gii_data')
-          .select('*')
+          .select('economy, score, rank, income_group, region, input_score, output_score')
           .eq('economy', countryName)
           .single();
 
@@ -45,7 +45,7 @@ export default function CountryDetailPage() {
         // Fetch peer countries (same income group)
         const { data: peerData, error: err2 } = await supabase
           .from('gii_data')
-          .select('*')
+          .select('economy, score, rank, income_group, region, input_score, output_score')
           .eq('income_group', countryData.income_group)
           .neq('economy', countryName)
           .order('score', { ascending: false })

@@ -31,7 +31,7 @@ export default function DashboardPage() {
       try {
         let query = supabase
           .from('gii_data')
-          .select('*')
+          .select('economy, score, rank, income_group, region, input_score, output_score')
           .order('rank', { ascending: true });
 
         if (filterRegion && filterRegion !== "All Regions") {
