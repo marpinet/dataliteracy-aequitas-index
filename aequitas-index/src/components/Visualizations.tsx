@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 interface Country {
@@ -380,6 +380,13 @@ export default function Visualizations({ countries }: VisualizationsProps) {
 
   // Debug log
   console.log('[Visualizations] Countries updated:', countries.length, 'Key:', countriesKey.substring(0, 50));
+
+  // Force re-render of active hook when countries change
+  useEffect(() => {
+    console.log('[Visualizations] Countries changed, triggering re-render');
+    // This forces React to unmount/remount the active visualization
+    setActiveHook(prev => prev);
+  }, [countriesKey]);
 
 
   const hooks = [
