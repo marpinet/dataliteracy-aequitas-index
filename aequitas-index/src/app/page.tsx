@@ -60,9 +60,9 @@ export default function Home() {
         </p>
 
         <div className="flex justify-center gap-4 mb-12">
-          <button className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90 font-medium">
-            Start Free →
-          </button>
+          <Link href="/dashboard" className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90 font-medium">
+            Explore Data →
+          </Link>
           <Link href="/contact" className="px-8 py-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 font-medium">
             Request Demo
           </Link>
