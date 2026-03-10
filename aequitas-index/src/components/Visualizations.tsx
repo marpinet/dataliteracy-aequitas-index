@@ -63,7 +63,7 @@ const OutlierVisualization = ({ countries }: { countries: Country[] }) => {
             <YAxis type="number" dataKey="output" name="Output Score" stroke={C.muted} />
             <Tooltip 
               cursor={{ strokeDasharray: '3 3' }}
-              contentStyle={{ backgroundColor: '#fff', border: `1px solid ${C.border}` }}
+              contentStyle={{ backgroundColor: '#fff', border: '1px solid #e8e2d6' }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const d = payload[0].payload;
@@ -122,7 +122,7 @@ const PeerVisualization = ({ countries }: { countries: Country[] }) => {
     <div className="w-full">
       <div className="bg-white border border-gray-200 rounded-sm p-8">
         {/* Header row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: '14px', marginBottom: '16px', fontSize: '10px', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'DM Mono', monospace", fontWeight: 500, borderBottom: `1px dashed ${C.border}`, paddingBottom: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: '14px', marginBottom: '16px', fontSize: '10px', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'DM Mono', monospace", fontWeight: 500, borderBottom: '1px dashed #e8e2d6', paddingBottom: '12px' }}>
           <div style={{ textAlign: 'right' }}>Economy</div>
           <div>Efficiency Ratio</div>
           <div>Ratio</div>
@@ -201,10 +201,10 @@ const TrendVisualization = ({ countries }: { countries: Country[] }) => {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e8e2d6" />
-            <XAxis dataKey="year" stroke={C.muted} tick={{ family: "'DM Mono', monospace", fontSize: 10 }} />
-            <YAxis stroke={C.muted} tick={{ family: "'DM Mono', monospace", fontSize: 10 }} />
+            <XAxis dataKey="year" stroke={C.muted} />
+            <YAxis stroke={C.muted} />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#fff', border: `1px solid ${C.border}` }}
+              contentStyle={{ backgroundColor: '#fff', border: '1px solid #e8e2d6' }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   return (
@@ -389,7 +389,7 @@ export default function Visualizations({ countries }: VisualizationsProps) {
       </div>
 
       {/* Hook Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg">
+      <div className="bg-white dark:bg-gray-900 rounded-lg" key={`hook-${activeHook}-${countries.length}`}>
         {activeHook === 1 && <OutlierVisualization countries={countries} />}
         {activeHook === 2 && <PeerVisualization countries={countries} />}
         {activeHook === 3 && <TrendVisualization countries={countries} />}
