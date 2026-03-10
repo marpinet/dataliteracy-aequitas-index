@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface Country {
-  economy: string;
-  score: number;
-  rank: number;
-  income_group: string;
-  region: string;
-  input_score: number;
-  output_score: number;
+  Economy: string;
+  Score: number;
+  Rank: number;
+  Income_Group: string;
+  Region: string;
+  Input_Score: number;
+  Output_Score: number;
 }
 
 interface VisualizationsProps {
@@ -29,11 +29,11 @@ const getIncomeGroupColor = (group: string): string => {
 
 const ScatterPlotVisualization = ({ countries }: { countries: Country[] }) => {
   const data = countries.map((c) => ({
-    economy: c.economy,
-    input: c.input_score,
-    output: c.output_score,
-    efficiency: c.output_score / c.input_score,
-    incomeGroup: c.income_group,
+    Economy: c.Economy,
+    input: c.Input_Score,
+    output: c.Output_Score,
+    efficiency: c.Output_Score / c.Input_Score,
+    incomeGroup: c.Income_Group,
   }));
 
   return (
@@ -50,7 +50,7 @@ const ScatterPlotVisualization = ({ countries }: { countries: Country[] }) => {
                 const data = payload[0].payload;
                 return (
                   <div className="bg-white p-2 rounded shadow-lg text-sm">
-                    <p className="font-semibold">{data.economy}</p>
+                    <p className="font-semibold">{data.Economy}</p>
                     <p>Input: {data.input.toFixed(1)}</p>
                     <p>Output: {data.output.toFixed(1)}</p>
                     <p>Efficiency: {data.efficiency.toFixed(3)}</p>
@@ -83,9 +83,9 @@ const EfficiencyChartVisualization = ({ countries }: { countries: Country[] }) =
   // Group by income group and calculate average efficiency
   const incomeGroups = ['High-income', 'Upper middle-income', 'Lower middle-income', 'Low-income'];
   const data = incomeGroups.map((group) => {
-    const groupCountries = countries.filter((c) => c.income_group === group);
+    const groupCountries = countries.filter((c) => c.Income_Group === group);
     const avgEfficiency = groupCountries.length > 0
-      ? groupCountries.reduce((sum, c) => sum + (c.output_score / c.input_score), 0) / groupCountries.length
+      ? groupCountries.reduce((sum, c) => sum + (c.Output_Score / c.Input_Score), 0) / groupCountries.length
       : 0;
     return {
       name: group,
@@ -129,18 +129,18 @@ const EfficiencyChartVisualization = ({ countries }: { countries: Country[] }) =
 
 const RegionalHeatmapVisualization = ({ countries }: { countries: Country[] }) => {
   // Group by region and calculate stats
-  const regions = [...new Set(countries.map((c) => c.region))];
+  const regions = [...new Set(countries.map((c) => c.Region))];
   const regionData = regions.map((region) => {
-    const regionCountries = countries.filter((c) => c.region === region);
+    const regionCountries = countries.filter((c) => c.Region === region);
     const avgEfficiency = regionCountries.length > 0
-      ? regionCountries.reduce((sum, c) => sum + (c.output_score / c.input_score), 0) / regionCountries.length
+      ? regionCountries.reduce((sum, c) => sum + (c.Output_Score / c.Input_Score), 0) / regionCountries.length
       : 0;
-    const topCountry = regionCountries.sort((a, b) => (b.output_score / b.input_score) - (a.output_score / a.input_score))[0];
+    const topCountry = regionCountries.sort((a, b) => (b.Output_Score / b.Input_Score) - (a.Output_Score / a.Input_Score))[0];
     return {
       region,
       efficiency: parseFloat(avgEfficiency.toFixed(3)),
       count: regionCountries.length,
-      topCountry: topCountry?.economy || 'N/A',
+      topCountry: topCountry?.Economy || 'N/A',
     };
   });
 
