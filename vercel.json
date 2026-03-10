@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "aequitas-index/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "aequitas-index/$1"
+    }
+  ]
+}
