@@ -313,10 +313,19 @@ const DigitalTwinVisualization = ({ countries }: { countries: Country[] }) => {
       output: c.Output_Score,
       income: c.Income_Group,
     }))
-    .sort((a, b) => b.efficiency - a.efficiency);
+    .sort((a, b) => b.efficiency - a.efficiency)
+    .slice(0, 2);
 
-  const country1 = topCountries[0] || { name: 'Top Country', efficiency: 1.0, input: 50, output: 50, income: 'Unknown' };
-  const country2 = topCountries[1] || { name: 'Second Country', efficiency: 0.9, input: 50, output: 45, income: 'Unknown' };
+  if (countries.length === 0 || topCountries.length === 0) {
+    return (
+      <div className="w-full p-6 bg-gray-50 border border-gray-200 rounded-sm text-center text-gray-600">
+        <p>No data available for the selected region/filter.</p>
+      </div>
+    );
+  }
+
+  const country1 = topCountries[0];
+  const country2 = topCountries[1] || topCountries[0];
 
   // Simulate technology category mix based on efficiency (higher efficiency = more balanced portfolio)
   const normPct = (count: number) => {
@@ -360,6 +369,11 @@ const DigitalTwinVisualization = ({ countries }: { countries: Country[] }) => {
 export default function Visualizations({ countries }: VisualizationsProps) {
   const [activeHook, setActiveHook] = useState<number>(1);
 
+  // Create a unique ID based on the actual countries data to force re-renders
+  const countriesKey = countries.length > 0 
+    ? `${countries[0].Economy}-${countries[countries.length - 1].Economy}-${countries.length}`
+    : 'empty';
+
   const hooks = [
     { id: 1, label: '01 · The Outlier', subtitle: 'Hidden Overperformers' },
     { id: 2, label: '02 · The Peer', subtitle: 'True Comparables' },
@@ -389,12 +403,12 @@ export default function Visualizations({ countries }: VisualizationsProps) {
       </div>
 
       {/* Hook Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg" key={`hook-${activeHook}-${countries.length}`}>
-        {activeHook === 1 && <OutlierVisualization countries={countries} />}
-        {activeHook === 2 && <PeerVisualization countries={countries} />}
-        {activeHook === 3 && <TrendVisualization countries={countries} />}
-        {activeHook === 4 && <LocationVisualization countries={countries} />}
-        {activeHook === 5 && <DigitalTwinVisualization countries={countries} />}
+      <div key={`vis-${countriesKey}`} className="bg-white dark:bg-gray-900 rounded-lg">
+        {activeHook === 1 && <OutlierVisualization key={`hook1-${countriesKey}`} countries={countries} />}
+        {activeHook === 2 && <PeerVisualization key={`hook2-${countriesKey}`} countries={countries} />}
+        {activeHook === 3 && <TrendVisualization key={`hook3-${countriesKey}`} countries={countries} />}
+        {activeHook === 4 && <LocationVisualization key={`hook4-${countriesKey}`} countries={countries} />}
+        {activeHook === 5 && <DigitalTwinVisualization key={`hook5-${countriesKey}`} countries={countries} />}
       </div>
     </div>
   );
