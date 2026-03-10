@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Visualizations from "@/components/Visualizations";
 
 interface Country {
   economy: string;
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [filterRegion, setFilterRegion] = useState<string>("");
   const [filterIncomeGroup, setFilterIncomeGroup] = useState<string>("");
+  const [showVisualizations, setShowVisualizations] = useState(false);
 
   const regions = ["All Regions", "Europe", "Northern America", "South East Asia, East Asia, and Oceania", "Northern Africa and Western Asia", "Sub-Saharan Africa", "Latin America and the Caribbean", "Central and Southern Asia"];
   const incomeGroups = ["All Income Groups", "High-income", "Upper middle-income", "Lower middle-income", "Low-income"];
@@ -79,6 +81,29 @@ export default function DashboardPage() {
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
           Browse {countries.length} economies with corrected efficiency scores.
         </p>
+
+        {/* Visualizations Section */}
+        <div className="mb-16 p-8 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">Data Visualizations</h2>
+            <button
+              onClick={() => setShowVisualizations(!showVisualizations)}
+              className="text-sm px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90"
+            >
+              {showVisualizations ? 'Hide' : 'Show'} Visualizations
+            </button>
+          </div>
+          
+          {showVisualizations && !loading && countries.length > 0 && (
+            <Visualizations countries={countries} />
+          )}
+          
+          {!showVisualizations && (
+            <p className="text-gray-600 dark:text-gray-400">
+              Click "Show Visualizations" to explore interactive charts showing peer comparisons, efficiency by income group, and regional clusters.
+            </p>
+          )}
+        </div>
 
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
