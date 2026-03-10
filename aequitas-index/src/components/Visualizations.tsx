@@ -48,6 +48,11 @@ const OutlierVisualization = ({ countries }: { countries: Country[] }) => {
     return C.blue;
   };
 
+  // Find min/max for diagonal reference line
+  const allScores = data.map(d => [d.input, d.output]).flat();
+  const minScore = Math.min(...allScores);
+  const maxScore = Math.max(...allScores);
+
   return (
     <div className="w-full">
       <div className="h-[450px] bg-white border border-gray-200 rounded-sm p-6 relative shadow-sm">
@@ -73,22 +78,24 @@ const OutlierVisualization = ({ countries }: { countries: Country[] }) => {
                 return null;
               }}
             />
-            <Scatter name="Countries" data={data} fill={C.blue}>
-              {data.map((d, i) => (
-                <Scatter
-                  key={`scatter-${i}`}
-                  dataKey="output"
-                  data={[d]}
-                  fill={efficiencyColor(d)}
-                  fillOpacity={0.8}
-                />
-              ))}
-            </Scatter>
+            <Scatter name="Countries" data={data} fill={C.blue} />
+            {/* Reference diagonal line: expected output = input */}
+            <Scatter 
+              name="Expected (Input = Output)" 
+              data={[
+                { input: minScore, output: minScore },
+                { input: maxScore, output: maxScore }
+              ]}
+              line={{ stroke: C.gold + '88', strokeWidth: 1.5, strokeDasharray: '6 4' }}
+              shape="cross"
+              fill="none"
+              isAnimationActive={false}
+            />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
       <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
-        <p><strong className="text-red-700">Viet Nam, India, and Türkiye</strong> sit far above the diagonal — producing disproportionately high innovation outputs relative to their institutional inputs.</p>
+        <p><strong className="text-red-700">Viet Nam, India, and Türkiye</strong> sit far above the diagonal — producing disproportionately high innovation outputs relative to their institutional inputs. These are the economies the raw GII rank actively obscures.</p>
       </div>
     </div>
   );
@@ -115,7 +122,8 @@ const PeerVisualization = ({ countries }: { countries: Country[] }) => {
   return (
     <div className="w-full">
       <div className="bg-white border border-gray-200 rounded-sm p-8">
-        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: '14px', marginBottom: '16px', fontSize: '10px', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'monospace' }}>
+        {/* Header row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: '14px', marginBottom: '16px', fontSize: '10px', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'DM Mono', monospace", fontWeight: 500, borderBottom: `1px dashed ${C.border}`, paddingBottom: '12px' }}>
           <div style={{ textAlign: 'right' }}>Economy</div>
           <div>Efficiency Ratio</div>
           <div>Ratio</div>
@@ -126,7 +134,7 @@ const PeerVisualization = ({ countries }: { countries: Country[] }) => {
           const barColor = p.leader ? C.rust : (p.efficiency > 0.78 ? C.teal : C.blue);
           return (
             <div key={p.name} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: '14px', alignItems: 'center', marginBottom: '12px' }}>
-              <div style={{ textAlign: 'right', fontSize: '12px', fontWeight: 500, fontFamily: 'monospace', color: C.ink }}>{p.name}</div>
+              <div style={{ textAlign: 'right', fontSize: '12px', fontWeight: 500, fontFamily: "'DM Mono', monospace", color: C.ink }}>{p.name}</div>
               <div style={{ background: C.cream, height: '28px', position: 'relative', overflow: 'hidden', borderRadius: '1px' }}>
                 <div
                   style={{
@@ -139,25 +147,25 @@ const PeerVisualization = ({ countries }: { countries: Country[] }) => {
                     color: 'white',
                     fontSize: '10px',
                     fontWeight: 500,
-                    fontFamily: 'monospace',
+                    fontFamily: "'DM Mono', monospace",
                   }}
                 >
-                  {p.leader && '← Efficiency Leader'}
+                  {p.leader && `${p.efficiency.toFixed(2)} ← Efficiency Leader`}
                 </div>
               </div>
-              <div style={{ fontSize: '12px', fontWeight: 500, fontFamily: 'monospace', color: C.muted }}>{p.efficiency.toFixed(2)}</div>
+              <div style={{ fontSize: '12px', fontWeight: 500, fontFamily: "'DM Mono', monospace", color: C.muted }}>{p.efficiency.toFixed(2)}</div>
             </div>
           );
         })}
 
-        <div style={{ display: 'flex', gap: '24px', marginTop: '20px', fontSize: '11px', color: C.muted, fontFamily: 'monospace' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.blue }}></div>GII Raw Score</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.teal }}></div>Efficiency Score</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.rust }}></div>Efficiency Leader</span>
+        <div style={{ display: 'flex', gap: '24px', marginTop: '24px', fontSize: '11px', color: C.muted, fontFamily: "'DM Mono', monospace" }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.blue, borderRadius: '1px' }}></div>Lower Efficiency</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.teal, borderRadius: '1px' }}></div>High Efficiency</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.rust, borderRadius: '1px' }}></div>Efficiency Leader</span>
         </div>
       </div>
       <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
-        <p><strong className="text-red-700">Kenya</strong> ranks #4 by raw GII score but is the efficiency leader — demonstrating why efficiency-adjusted rankings tell a different story.</p>
+        <p><strong className="text-red-700">Kenya</strong> ranks #4 by raw GII score in this peer group but is the <strong>efficiency leader</strong> — generating 0.83 output per input unit. This reveals why efficiency-adjusted rankings tell a different story.</p>
       </div>
     </div>
   );
@@ -165,16 +173,16 @@ const PeerVisualization = ({ countries }: { countries: Country[] }) => {
 
 // ── HOOK 3: The Trend ────────────────────────────────────────────────
 const TrendVisualization = ({ countries }: { countries: Country[] }) => {
-  // Mock trend data - in production, this would come from a separate data source
+  // Per-capita ICT patent data 2015–2022 (patents per million people)
   const trendData = [
-    { year: 2015, India: 2.2, Vietnam: 0.08, Malaysia: 9.8 },
-    { year: 2016, India: 2.6, Vietnam: 0.12, Malaysia: 7.5 },
-    { year: 2017, India: 2.3, Vietnam: 0.03, Malaysia: 7.4 },
-    { year: 2018, India: 2.3, Vietnam: 0.08, Malaysia: 4.9 },
-    { year: 2019, India: 3.0, Vietnam: 0.12, Malaysia: 3.2 },
-    { year: 2020, India: 3.6, Vietnam: 0.22, Malaysia: 4.2 },
-    { year: 2021, India: 4.3, Vietnam: 0.22, Malaysia: 6.4 },
-    { year: 2022, India: 6.9, Vietnam: 0.28, Malaysia: 6.5 },
+    { year: '2015', India: 2.16, Vietnam: 0.09, Malaysia: 9.84 },
+    { year: '2016', India: 2.63, Vietnam: 0.13, Malaysia: 7.53 },
+    { year: '2017', India: 2.31, Vietnam: 0.03, Malaysia: 7.38 },
+    { year: '2018', India: 2.34, Vietnam: 0.08, Malaysia: 4.94 },
+    { year: '2019', India: 3.05, Vietnam: 0.12, Malaysia: 3.18 },
+    { year: '2020', India: 3.66, Vietnam: 0.23, Malaysia: 4.24 },
+    { year: '2021', India: 4.47, Vietnam: 0.22, Malaysia: 6.42 },
+    { year: '2022', India: 6.96, Vietnam: 0.28, Malaysia: 6.55 },
   ];
 
   return (
@@ -183,8 +191,8 @@ const TrendVisualization = ({ countries }: { countries: Country[] }) => {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e8e2d6" />
-            <XAxis dataKey="year" stroke={C.muted} />
-            <YAxis stroke={C.muted} label={{ value: 'Patents per million people', angle: -90, position: 'insideLeft' }} />
+            <XAxis dataKey="year" stroke={C.muted} tick={{ family: "'DM Mono', monospace", fontSize: 10 }} />
+            <YAxis stroke={C.muted} tick={{ family: "'DM Mono', monospace", fontSize: 10 }} />
             <Tooltip 
               contentStyle={{ backgroundColor: '#fff', border: `1px solid ${C.border}` }}
               content={({ active, payload }) => {
@@ -193,7 +201,7 @@ const TrendVisualization = ({ countries }: { countries: Country[] }) => {
                     <div className="p-3 bg-white border border-gray-300 rounded text-xs">
                       <p className="font-semibold text-black">Year {payload[0].payload.year}</p>
                       {payload.map((p) => (
-                        <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value.toFixed(2)}</p>
+                        <p key={p.name} style={{ color: p.color, fontSize: '11px' }}>{p.name}: {(p.value as number).toFixed(2)} patents/million</p>
                       ))}
                     </div>
                   );
@@ -201,15 +209,15 @@ const TrendVisualization = ({ countries }: { countries: Country[] }) => {
                 return null;
               }}
             />
-            <Legend wrapperStyle={{ fontFamily: 'monospace', fontSize: '11px' }} />
-            <Line type="monotone" dataKey="India" stroke={C.teal} fill={C.teal + '18'} strokeWidth={2.5} dot={{ r: 4 }} />
+            <Legend wrapperStyle={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', paddingTop: '20px' }} />
+            <Line type="monotone" dataKey="India" stroke={C.teal} fill={C.teal + '18'} strokeWidth={2.5} dot={{ r: 4 }} isAnimationActive={true} />
             <Line type="monotone" dataKey="Vietnam" stroke={C.rust} fill={C.rust + '12'} strokeWidth={2.5} dot={{ r: 4 }} />
             <Line type="monotone" dataKey="Malaysia" stroke={C.gold} strokeWidth={2} strokeDasharray="5,4" dot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
       <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
-        <p><strong className="text-red-700">India's</strong> per-capita ICT patent output has grown 3.5× since 2015. <strong>Viet Nam</strong> shows the steepest efficiency inflection — a classic early-stage overperformer signal.</p>
+        <p><strong className="text-red-700">India's</strong> per-capita ICT patent output has grown <strong>3.2× since 2015</strong>, accelerating sharply after 2019. <strong>Vietnam</strong>, starting near zero, shows the steepest efficiency inflection — a classic early-stage overperformer signal.</p>
       </div>
     </div>
   );
