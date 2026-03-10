@@ -55,9 +55,10 @@ const OutlierVisualization = ({ countries }: { countries: Country[] }) => {
 
   return (
     <div className="w-full">
-      <div className="h-[450px] bg-white border border-gray-200 rounded-sm p-6 relative shadow-sm">
-        <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+      <div className="bg-white border border-gray-200 rounded-sm shadow-sm">
+        <div className="h-[450px] p-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e8e2d6" />
             <XAxis type="number" dataKey="input" name="Input Score" stroke={C.muted} />
             <YAxis type="number" dataKey="output" name="Output Score" stroke={C.muted} />
@@ -91,8 +92,9 @@ const OutlierVisualization = ({ countries }: { countries: Country[] }) => {
               fill="none"
               isAnimationActive={false}
             />
-          </ScatterChart>
-        </ResponsiveContainer>
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
       </div>
       <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
         <p><strong className="text-red-700">Viet Nam, India, and Türkiye</strong> sit far above the diagonal — producing disproportionately high innovation outputs relative to their institutional inputs. These are the economies the raw GII rank actively obscures.</p>
@@ -197,9 +199,10 @@ const TrendVisualization = ({ countries }: { countries: Country[] }) => {
 
   return (
     <div className="w-full">
-      <div className="h-[400px] bg-white border border-gray-200 rounded-sm p-6">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+      <div className="bg-white border border-gray-200 rounded-sm">
+        <div className="h-[400px] p-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e8e2d6" />
             <XAxis dataKey="year" stroke={C.muted} />
             <YAxis stroke={C.muted} />
@@ -223,8 +226,9 @@ const TrendVisualization = ({ countries }: { countries: Country[] }) => {
             <Line type="monotone" dataKey={topCountryName} stroke={C.teal} fill={C.teal + '18'} strokeWidth={2.5} dot={{ r: 4 }} isAnimationActive={true} />
             <Line type="monotone" dataKey={secondCountryName} stroke={C.gold} strokeWidth={2} strokeDasharray="5,4" dot={{ r: 4 }} />
             <Line type="monotone" dataKey={thirdCountryName} stroke={C.rust} fill={C.rust + '12'} strokeWidth={2} dot={{ r: 4 }} />
-          </LineChart>
-        </ResponsiveContainer>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
       <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
         <p><strong className="text-red-700">{topCountryName}</strong> (efficiency: {topCountries[0]?.efficiency.toFixed(2)}) leads the dataset, demonstrating the highest innovation output relative to institutional inputs. The trend shows sustained efficiency growth over recent years.</p>
@@ -350,17 +354,19 @@ const DigitalTwinVisualization = ({ countries }: { countries: Country[] }) => {
 
   return (
     <div className="w-full">
-      <div className="bg-white border border-gray-200 rounded-sm p-6" style={{ height: '450px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={radarData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+      <div className="bg-white border border-gray-200 rounded-sm">
+        <div className="p-6" style={{ height: '450px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={radarData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <PolarGrid stroke="#e8e2d6" />
             <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: C.muted, fontFamily: 'monospace' }} />
             <PolarRadiusAxis angle={90} domain={[0, 50]} tick={{ fontSize: 10, fill: C.muted, fontFamily: 'monospace' }} />
             <Radar name={country1.name} dataKey={country1.name} stroke={C.rust} fill={C.rust} fillOpacity={0.28} />
             <Radar name={country2.name} dataKey={country2.name} stroke={C.gold} fill={C.gold} fillOpacity={0.28} />
             <Legend wrapperStyle={{ fontFamily: 'monospace', fontSize: '11px', paddingTop: '20px' }} />
-          </RadarChart>
-        </ResponsiveContainer>
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
       <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
         <p><strong className="text-red-700">{country1.name}</strong> (efficiency {country1.efficiency.toFixed(2)}) demonstrates a more balanced ICT innovation portfolio compared to <strong>{country2.name}</strong> (efficiency {country2.efficiency.toFixed(2)}). This suggests <strong>{country1.name}</strong> has developed a more diversified technology ecosystem.</p>
