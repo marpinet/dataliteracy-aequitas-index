@@ -6,13 +6,13 @@ import { supabase } from "@/lib/supabase";
 import Visualizations from "@/components/Visualizations";
 
 interface Country {
-  economy: string;
-  score: number;
-  rank: number;
-  income_group: string;
-  region: string;
-  input_score: number;
-  output_score: number;
+  Economy: string;
+  Score: number;
+  Rank: number;
+  Income_Group: string;
+  Region: string;
+  Input_Score: number;
+  Output_Score: number;
 }
 
 export default function DashboardPage() {
@@ -35,11 +35,11 @@ export default function DashboardPage() {
           .order('rank', { ascending: true });
 
         if (filterRegion && filterRegion !== "All Regions") {
-          query = query.eq('region', filterRegion);
+          query = query.eq('Region', filterRegion);
         }
 
         if (filterIncomeGroup && filterIncomeGroup !== "All Income Groups") {
-          query = query.eq('income_group', filterIncomeGroup);
+          query = query.eq('Income_Group', filterIncomeGroup);
         }
 
         const { data, error: err } = await query;
@@ -156,19 +156,19 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {countries.map((country) => (
-                  <tr key={country.economy} className="border-b border-gray-100 dark:border-gray-900 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
-                    <td className="py-4 px-4 text-sm font-semibold">{country.rank}</td>
-                    <td className="py-4 px-4 text-sm font-medium">{country.economy}</td>
+                  <tr key={country.Economy} className="border-b border-gray-100 dark:border-gray-900 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
+                    <td className="py-4 px-4 text-sm font-semibold">{country.Rank}</td>
+                    <td className="py-4 px-4 text-sm font-medium">{country.Economy}</td>
                     <td className="py-4 px-4 text-sm">
                       <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-xs font-semibold">
-                        {calculateEfficiencyScore(country.input_score, country.output_score).toFixed(3)}
+                        {calculateEfficiencyScore(country.Input_Score, country.Output_Score).toFixed(3)}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-sm">{country.score.toFixed(1)}</td>
-                    <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{country.income_group}</td>
-                    <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{country.region}</td>
+                    <td className="py-4 px-4 text-sm">{country.Score.toFixed(1)}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{country.Income_Group}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{country.Region}</td>
                     <td className="py-4 px-4 text-sm">
-                      <Link href={`/dashboard/${country.economy}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                      <Link href={`/dashboard/${country.Economy}`} className="text-blue-600 dark:text-blue-400 hover:underline">
                         View →
                       </Link>
                     </td>
