@@ -316,6 +316,9 @@ const DigitalTwinVisualization = ({ countries }: { countries: Country[] }) => {
     .sort((a, b) => b.efficiency - a.efficiency)
     .slice(0, 2);
 
+  // Debug log
+  console.log('[DigitalTwin] Rendering with countries:', countries.length, 'Top 2:', topCountries.map(c => c.name));
+
   if (countries.length === 0 || topCountries.length === 0) {
     return (
       <div className="w-full p-6 bg-gray-50 border border-gray-200 rounded-sm text-center text-gray-600">
@@ -374,6 +377,10 @@ export default function Visualizations({ countries }: VisualizationsProps) {
     .map(c => `${c.Economy}:${c.Input_Score}:${c.Output_Score}`)
     .join('|')
     .substring(0, 100); // Keep reasonable length
+
+  // Debug log
+  console.log('[Visualizations] Countries updated:', countries.length, 'Key:', countriesKey.substring(0, 50));
+
 
   const hooks = [
     { id: 1, label: '01 · The Outlier', subtitle: 'Hidden Overperformers' },
