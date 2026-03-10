@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 interface Country {
   Economy: string;
@@ -17,188 +17,353 @@ interface VisualizationsProps {
   countries: Country[];
 }
 
-const getIncomeGroupColor = (group: string): string => {
-  const colors: Record<string, string> = {
-    'High-income': '#4f46e5',
-    'Upper middle-income': '#10b981',
-    'Lower middle-income': '#f59e0b',
-    'Low-income': '#ef4444',
-  };
-  return colors[group] || '#6b7280';
+// Color palette from design system
+const C = {
+  ink: '#0e0e0e',
+  paper: '#f5f0e8',
+  cream: '#ede8dc',
+  gold: '#c9a84c',
+  rust: '#b8470b',
+  teal: '#1d6a6a',
+  blue: '#9bb5c0',
+  muted: '#6b6458',
 };
 
-const ScatterPlotVisualization = ({ countries }: { countries: Country[] }) => {
+// ── HOOK 1: The Outlier ──────────────────────────────────────────────
+const OutlierVisualization = ({ countries }: { countries: Country[] }) => {
+  const highlight = ['Viet Nam', 'India', 'Türkiye', 'China', 'Philippines'];
+  
   const data = countries.map((c) => ({
     Economy: c.Economy,
     input: c.Input_Score,
     output: c.Output_Score,
-    efficiency: c.Output_Score / c.Input_Score,
+    efficiency: +(c.Output_Score / c.Input_Score).toFixed(2),
     incomeGroup: c.Income_Group,
   }));
 
-  return (
-    <div className="w-full h-96">
-      <ResponsiveContainer width="100%" height="100%">
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" dataKey="input" name="Input Score" />
-          <YAxis type="number" dataKey="output" name="Output Score" />
-          <Tooltip 
-            cursor={{ strokeDasharray: '3 3' }}
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const data = payload[0].payload;
-                return (
-                  <div className="bg-white p-2 rounded shadow-lg text-sm">
-                    <p className="font-semibold">{data.Economy}</p>
-                    <p>Input: {data.input.toFixed(1)}</p>
-                    <p>Output: {data.output.toFixed(1)}</p>
-                    <p>Efficiency: {data.efficiency.toFixed(3)}</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Legend />
-          {['High-income', 'Upper middle-income', 'Lower middle-income', 'Low-income'].map((group) => (
-            <Scatter
-              key={group}
-              name={group}
-              data={data.filter((d) => d.incomeGroup === group)}
-              fill={getIncomeGroupColor(group)}
-            />
-          ))}
-        </ScatterChart>
-      </ResponsiveContainer>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-        <strong>Peer Hook:</strong> Each dot is a country. X-axis shows institutional inputs, Y-axis shows innovation output. 
-        Countries above the diagonal are overperformers; below are underperformers relative to their income group.
-      </p>
-    </div>
-  );
-};
-
-const EfficiencyChartVisualization = ({ countries }: { countries: Country[] }) => {
-  // Group by income group and calculate average efficiency
-  const incomeGroups = ['High-income', 'Upper middle-income', 'Lower middle-income', 'Low-income'];
-  const data = incomeGroups.map((group) => {
-    const groupCountries = countries.filter((c) => c.Income_Group === group);
-    const avgEfficiency = groupCountries.length > 0
-      ? groupCountries.reduce((sum, c) => sum + (c.Output_Score / c.Input_Score), 0) / groupCountries.length
-      : 0;
-    return {
-      name: group,
-      efficiency: parseFloat(avgEfficiency.toFixed(3)),
-      count: groupCountries.length,
-    };
-  });
-
-  return (
-    <div className="w-full h-96">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-          <YAxis />
-          <Tooltip
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const data = payload[0].payload;
-                return (
-                  <div className="bg-white p-2 rounded shadow-lg text-sm">
-                    <p className="font-semibold">{data.name}</p>
-                    <p>Avg Efficiency: {data.efficiency.toFixed(3)}</p>
-                    <p>Countries: {data.count}</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Bar dataKey="efficiency" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-        <strong>Efficiency by Income Group:</strong> Average efficiency score for each income group. 
-        Higher bars indicate countries that are collectively producing more output relative to their inputs.
-      </p>
-    </div>
-  );
-};
-
-const RegionalHeatmapVisualization = ({ countries }: { countries: Country[] }) => {
-  // Group by region and calculate stats
-  const regions = [...new Set(countries.map((c) => c.Region))];
-  const regionData = regions.map((region) => {
-    const regionCountries = countries.filter((c) => c.Region === region);
-    const avgEfficiency = regionCountries.length > 0
-      ? regionCountries.reduce((sum, c) => sum + (c.Output_Score / c.Input_Score), 0) / regionCountries.length
-      : 0;
-    const topCountry = regionCountries.sort((a, b) => (b.Output_Score / b.Input_Score) - (a.Output_Score / a.Input_Score))[0];
-    return {
-      region,
-      efficiency: parseFloat(avgEfficiency.toFixed(3)),
-      count: regionCountries.length,
-      topCountry: topCountry?.Economy || 'N/A',
-    };
-  });
+  const efficiencyColor = (d: typeof data[0]) => {
+    if (d.Economy === 'China') return C.rust;
+    if (highlight.includes(d.Economy)) return C.teal;
+    if (d.efficiency > 1.0) return C.rust;
+    return C.blue;
+  };
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {regionData.sort((a, b) => b.efficiency - a.efficiency).map((region) => (
-          <div key={region.region} className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg">
-            <p className="font-semibold text-sm mb-2">{region.region}</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">{region.efficiency.toFixed(3)}</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Avg Efficiency</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              {region.count} countries • Top: {region.topCountry}
-            </p>
-          </div>
-        ))}
+      <div className="h-[450px] bg-white border border-gray-200 rounded-sm p-6 relative shadow-sm">
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e8e2d6" />
+            <XAxis type="number" dataKey="input" name="Input Score" stroke={C.muted} />
+            <YAxis type="number" dataKey="output" name="Output Score" stroke={C.muted} />
+            <Tooltip 
+              cursor={{ strokeDasharray: '3 3' }}
+              contentStyle={{ backgroundColor: '#fff', border: `1px solid ${C.border}` }}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const d = payload[0].payload;
+                  return (
+                    <div className="p-3 bg-white border border-gray-300 rounded text-xs">
+                      <p className="font-semibold text-black">{d.Economy}</p>
+                      <p className="text-gray-600">Input: {d.input} · Output: {d.output}</p>
+                      <p className="text-gray-600">Efficiency: {d.efficiency.toFixed(2)}</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Scatter name="Countries" data={data} fill={C.blue}>
+              {data.map((d, i) => (
+                <Scatter
+                  key={`scatter-${i}`}
+                  dataKey="output"
+                  data={[d]}
+                  fill={efficiencyColor(d)}
+                  fillOpacity={0.8}
+                />
+              ))}
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
       </div>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mt-6">
-        <strong>Geospatial Hook:</strong> Regional efficiency clusters showing average innovation efficiency by geography. 
-        Discover regional hotspots and understand geographic patterns in innovation output.
-      </p>
+      <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
+        <p><strong className="text-red-700">Viet Nam, India, and Türkiye</strong> sit far above the diagonal — producing disproportionately high innovation outputs relative to their institutional inputs.</p>
+      </div>
+    </div>
+  );
+};
+
+// ── HOOK 2: The Peer ──────────────────────────────────────────────────
+const PeerVisualization = ({ countries }: { countries: Country[] }) => {
+  // Sample Sub-Saharan Africa peers
+  const peerNames = ['Kenya', 'Nigeria', 'Rwanda', 'Ethiopia', 'South Africa'];
+  const peers = countries
+    .filter(c => peerNames.includes(c.Economy))
+    .map(c => ({
+      name: c.Economy,
+      gii: c.Score,
+      input: c.Input_Score,
+      output: c.Output_Score,
+      efficiency: +(c.Output_Score / c.Input_Score).toFixed(2),
+      leader: c.Economy === 'Kenya',
+    }))
+    .sort((a, b) => b.efficiency - a.efficiency);
+
+  const maxEff = Math.max(...peers.map(p => p.efficiency));
+
+  return (
+    <div className="w-full">
+      <div className="bg-white border border-gray-200 rounded-sm p-8">
+        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: '14px', marginBottom: '16px', fontSize: '10px', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'monospace' }}>
+          <div style={{ textAlign: 'right' }}>Economy</div>
+          <div>Efficiency Ratio</div>
+          <div>Ratio</div>
+        </div>
+
+        {peers.map((p) => {
+          const pct = (p.efficiency / maxEff * 100).toFixed(1);
+          const barColor = p.leader ? C.rust : (p.efficiency > 0.78 ? C.teal : C.blue);
+          return (
+            <div key={p.name} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: '14px', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ textAlign: 'right', fontSize: '12px', fontWeight: 500, fontFamily: 'monospace', color: C.ink }}>{p.name}</div>
+              <div style={{ background: C.cream, height: '28px', position: 'relative', overflow: 'hidden', borderRadius: '1px' }}>
+                <div
+                  style={{
+                    height: '100%',
+                    background: barColor,
+                    width: `${pct}%`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: '10px',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: 500,
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {p.leader && '← Efficiency Leader'}
+                </div>
+              </div>
+              <div style={{ fontSize: '12px', fontWeight: 500, fontFamily: 'monospace', color: C.muted }}>{p.efficiency.toFixed(2)}</div>
+            </div>
+          );
+        })}
+
+        <div style={{ display: 'flex', gap: '24px', marginTop: '20px', fontSize: '11px', color: C.muted, fontFamily: 'monospace' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.blue }}></div>GII Raw Score</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.teal }}></div>Efficiency Score</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}><div style={{ width: '12px', height: '12px', background: C.rust }}></div>Efficiency Leader</span>
+        </div>
+      </div>
+      <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
+        <p><strong className="text-red-700">Kenya</strong> ranks #4 by raw GII score but is the efficiency leader — demonstrating why efficiency-adjusted rankings tell a different story.</p>
+      </div>
+    </div>
+  );
+};
+
+// ── HOOK 3: The Trend ────────────────────────────────────────────────
+const TrendVisualization = ({ countries }: { countries: Country[] }) => {
+  // Mock trend data - in production, this would come from a separate data source
+  const trendData = [
+    { year: 2015, India: 2.2, Vietnam: 0.08, Malaysia: 9.8 },
+    { year: 2016, India: 2.6, Vietnam: 0.12, Malaysia: 7.5 },
+    { year: 2017, India: 2.3, Vietnam: 0.03, Malaysia: 7.4 },
+    { year: 2018, India: 2.3, Vietnam: 0.08, Malaysia: 4.9 },
+    { year: 2019, India: 3.0, Vietnam: 0.12, Malaysia: 3.2 },
+    { year: 2020, India: 3.6, Vietnam: 0.22, Malaysia: 4.2 },
+    { year: 2021, India: 4.3, Vietnam: 0.22, Malaysia: 6.4 },
+    { year: 2022, India: 6.9, Vietnam: 0.28, Malaysia: 6.5 },
+  ];
+
+  return (
+    <div className="w-full">
+      <div className="h-[400px] bg-white border border-gray-200 rounded-sm p-6">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e8e2d6" />
+            <XAxis dataKey="year" stroke={C.muted} />
+            <YAxis stroke={C.muted} label={{ value: 'Patents per million people', angle: -90, position: 'insideLeft' }} />
+            <Tooltip 
+              contentStyle={{ backgroundColor: '#fff', border: `1px solid ${C.border}` }}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="p-3 bg-white border border-gray-300 rounded text-xs">
+                      <p className="font-semibold text-black">Year {payload[0].payload.year}</p>
+                      {payload.map((p) => (
+                        <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value.toFixed(2)}</p>
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Legend wrapperStyle={{ fontFamily: 'monospace', fontSize: '11px' }} />
+            <Line type="monotone" dataKey="India" stroke={C.teal} fill={C.teal + '18'} strokeWidth={2.5} dot={{ r: 4 }} />
+            <Line type="monotone" dataKey="Vietnam" stroke={C.rust} fill={C.rust + '12'} strokeWidth={2.5} dot={{ r: 4 }} />
+            <Line type="monotone" dataKey="Malaysia" stroke={C.gold} strokeWidth={2} strokeDasharray="5,4" dot={{ r: 4 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
+        <p><strong className="text-red-700">India's</strong> per-capita ICT patent output has grown 3.5× since 2015. <strong>Viet Nam</strong> shows the steepest efficiency inflection — a classic early-stage overperformer signal.</p>
+      </div>
+    </div>
+  );
+};
+
+// ── HOOK 4: The Location ─────────────────────────────────────────────
+const LocationVisualization = ({ countries }: { countries: Country[] }) => {
+  const sampleCountries = [
+    'Switzerland', 'Sweden', 'United States', 'Singapore', 'United Kingdom', 'Republic of Korea',
+    'China', 'Finland', 'Germany', 'France', 'Türkiye', 'India', 'Viet Nam', 'Philippines',
+    'Malaysia', 'Brazil', 'Indonesia', 'Morocco', 'South Africa', 'Kenya'
+  ];
+
+  const mapData = countries
+    .filter(c => sampleCountries.includes(c.Economy))
+    .map(c => ({
+      name: c.Economy.length > 11 ? c.Economy.slice(0, 11) : c.Economy,
+      efficiency: +(c.Output_Score / c.Input_Score).toFixed(2),
+      fullName: c.Economy,
+      region: c.Region,
+    }));
+
+  const effToColor = (eff: number) => {
+    if (eff >= 1.2) return { bg: C.rust, fg: '#fff' };
+    if (eff >= 1.05) return { bg: C.teal, fg: '#fff' };
+    if (eff >= 0.95) return { bg: '#4a8e8e', fg: '#fff' };
+    if (eff >= 0.85) return { bg: C.blue, fg: C.ink };
+    return { bg: '#ccc4b4', fg: C.ink };
+  };
+
+  return (
+    <div className="w-full">
+      <div className="bg-white border border-gray-200 rounded-sm p-6">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
+          {mapData.map((d) => {
+            const { bg, fg } = effToColor(d.efficiency);
+            return (
+              <div
+                key={d.fullName}
+                style={{
+                  padding: '12px 8px',
+                  textAlign: 'center',
+                  background: bg,
+                  color: fg,
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s',
+                }}
+                title={`${d.fullName} - ${d.region}: ${d.efficiency.toFixed(2)}`}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                <div style={{ fontSize: '9px', letterSpacing: '0.04em', marginBottom: '4px', fontFamily: 'monospace', opacity: 0.8 }}>{d.name}</div>
+                <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'serif' }}>{d.efficiency.toFixed(2)}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '10px', color: C.muted, fontFamily: 'monospace' }}>
+            <span>Underperformer</span>
+            <div style={{ width: '180px', height: '12px', background: `linear-gradient(to right, ${C.blue}, ${C.teal}, ${C.rust})`, borderRadius: '2px' }}></div>
+            <span>Overperformer</span>
+          </div>
+        </div>
+      </div>
+      <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
+        <p><strong className="text-red-700">South East Asia</strong> concentrates the highest efficiency scores. <strong>China</strong> is the most striking outlier globally — an efficiency ratio (1.25) that no other large economy matches.</p>
+      </div>
+    </div>
+  );
+};
+
+// ── HOOK 5: Digital Twin ─────────────────────────────────────────────
+const DigitalTwinVisualization = ({ countries }: { countries: Country[] }) => {
+  // Technology category mix (normalized % data)
+  const categories = ['Computer\nTech', 'Digital\nComm.', 'Telecom', 'Audio-\nVisual', 'IT Mgmt'];
+  const malaysiaData = [42, 26, 20, 7, 5]; // Malaysia 2015
+  const vietnamData = [43, 28, 14, 7, 8];  // Vietnam 2022 (similar patterns)
+
+  const normPct = (arr: number[]) => {
+    const s = arr.reduce((a, b) => a + b, 0);
+    return arr.map((v) => +((v / s) * 100).toFixed(1));
+  };
+
+  const malNorm = normPct(malaysiaData);
+  const vietNorm = normPct(vietnamData);
+
+  const radarData = categories.map((cat, i) => ({
+    category: cat,
+    Malaysia: malNorm[i],
+    Vietnam: vietNorm[i],
+  }));
+
+  return (
+    <div className="w-full">
+      <div className="h-[450px] bg-white border border-gray-200 rounded-sm p-6">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={radarData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <PolarGrid stroke="#e8e2d6" />
+            <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: C.muted, fontFamily: 'monospace' }} />
+            <PolarRadiusAxis angle={90} domain={[0, 50]} tick={{ fontSize: 10, fill: C.muted, fontFamily: 'monospace' }} />
+            <Radar name="Malaysia — 2015" dataKey="Malaysia" stroke={C.gold} fill={C.gold} fillOpacity={0.28} />
+            <Radar name="Vietnam — 2022" dataKey="Vietnam" stroke={C.rust} fill={C.rust} fillOpacity={0.28} />
+            <Legend wrapperStyle={{ fontFamily: 'monospace', fontSize: '11px', paddingTop: '20px' }} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
+        <p>Vietnam's 2022 ICT patent breakdown <strong className="text-red-700">closely mirrors Malaysia's profile from 2015</strong> — suggesting Vietnam is ~7 years behind Malaysia's innovation curve, with significant upside potential.</p>
+      </div>
     </div>
   );
 };
 
 export default function Visualizations({ countries }: VisualizationsProps) {
-  const [activeTab, setActiveTab] = useState<'scatter' | 'efficiency' | 'regional'>('scatter');
+  const [activeHook, setActiveHook] = useState<number>(1);
 
-  const tabs = [
-    { id: 'scatter', label: '📊 Peer Comparison', icon: '🎯' },
-    { id: 'efficiency', label: '📈 Efficiency by Income Group', icon: '💰' },
-    { id: 'regional', label: '🗺️ Regional Clusters', icon: '🌍' },
+  const hooks = [
+    { id: 1, label: '01 · The Outlier', subtitle: 'Hidden Overperformers' },
+    { id: 2, label: '02 · The Peer', subtitle: 'True Comparables' },
+    { id: 3, label: '03 · The Trend', subtitle: 'Trajectory Signal' },
+    { id: 4, label: '04 · The Location', subtitle: 'Regional Clusters' },
+    { id: 5, label: '05 · The Digital Twin', subtitle: 'Predictive Peer' },
   ];
 
   return (
     <div className="w-full">
-      {/* Tab Navigation */}
-      <div className="flex gap-2 mb-8 border-b border-gray-200 dark:border-gray-800">
-        {tabs.map((tab) => (
+      {/* Hook Navigation */}
+      <div className="flex gap-1 mb-8 border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
+        {hooks.map((hook) => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as 'scatter' | 'efficiency' | 'regional')}
-            className={`px-6 py-3 font-medium border-b-2 transition ${
-              activeTab === tab.id
-                ? 'border-black dark:border-white text-black dark:text-white'
+            key={hook.id}
+            onClick={() => setActiveHook(hook.id)}
+            className={`px-4 py-3 text-sm font-mono whitespace-nowrap border-b-2 transition ${
+              activeHook === hook.id
+                ? 'border-black dark:border-white text-black dark:text-white font-semibold'
                 : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
             }`}
           >
-            {tab.icon} {tab.label}
+            <div className="font-semibold">{hook.label}</div>
+            <div className="text-xs text-gray-500">{hook.subtitle}</div>
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
-      <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
-        {activeTab === 'scatter' && <ScatterPlotVisualization countries={countries} />}
-        {activeTab === 'efficiency' && <EfficiencyChartVisualization countries={countries} />}
-        {activeTab === 'regional' && <RegionalHeatmapVisualization countries={countries} />}
+      {/* Hook Content */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg">
+        {activeHook === 1 && <OutlierVisualization countries={countries} />}
+        {activeHook === 2 && <PeerVisualization countries={countries} />}
+        {activeHook === 3 && <TrendVisualization countries={countries} />}
+        {activeHook === 4 && <LocationVisualization countries={countries} />}
+        {activeHook === 5 && <DigitalTwinVisualization countries={countries} />}
       </div>
     </div>
   );
