@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface Country {
   Economy: string;
@@ -306,74 +306,9 @@ const LocationVisualization = ({ countries }: { countries: Country[] }) => {
   );
 };
 
-// ── HOOK 5: Digital Twin ─────────────────────────────────────────────
-const DigitalTwinVisualization = ({ countries }: { countries: Country[] }) => {
-  // Get top 2 countries by efficiency for comparison
-  const topCountries = countries
-    .map(c => ({
-      name: c.Economy,
-      efficiency: +(c.Output_Score / c.Input_Score).toFixed(2),
-      input: c.Input_Score,
-      output: c.Output_Score,
-      income: c.Income_Group,
-    }))
-    .sort((a, b) => b.efficiency - a.efficiency)
-    .slice(0, 2);
-
-  // Debug log
-  console.log('[DigitalTwin] Rendering with countries:', countries.length, 'Top 2:', topCountries.map(c => c.name));
-
-  if (countries.length === 0 || topCountries.length === 0) {
-    return (
-      <div className="w-full p-6 bg-gray-50 border border-gray-200 rounded-sm text-center text-gray-600">
-        <p>No data available for the selected region/filter.</p>
-      </div>
-    );
-  }
-
-  const country1 = topCountries[0];
-  const country2 = topCountries[1] || topCountries[0];
-
-  // Simulate technology category mix based on efficiency (higher efficiency = more balanced portfolio)
-  const normPct = (count: number) => {
-    const distribution = [35, 25, 20, 12, 8]; // Computer, Digital, Telecom, Audio, IT
-    const s = distribution.reduce((a, b) => a + b, 0);
-    return distribution.map(v => +((v / s) * 100).toFixed(1));
-  };
-
-  const country1Mix = normPct(country1.efficiency * 10);
-  const country2Mix = normPct(country2.efficiency * 10);
-
-  const categories = ['Computer\nTech', 'Digital\nComm.', 'Telecom', 'Audio-\nVisual', 'IT Mgmt'];
-  
-  const radarData = categories.map((cat, i) => ({
-    category: cat,
-    [country1.name]: country1Mix[i],
-    [country2.name]: country2Mix[i],
-  }));
-
-  return (
-    <div className="w-full">
-      <div className="bg-white border border-gray-200 rounded-sm">
-        <div className="p-6" style={{ height: '450px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <PolarGrid stroke="#e8e2d6" />
-            <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: C.muted, fontFamily: 'monospace' }} />
-            <PolarRadiusAxis angle={90} domain={[0, 50]} tick={{ fontSize: 10, fill: C.muted, fontFamily: 'monospace' }} />
-            <Radar name={country1.name} dataKey={country1.name} stroke={C.rust} fill={C.rust} fillOpacity={0.28} />
-            <Radar name={country2.name} dataKey={country2.name} stroke={C.gold} fill={C.gold} fillOpacity={0.28} />
-            <Legend wrapperStyle={{ fontFamily: 'monospace', fontSize: '11px', paddingTop: '20px' }} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      <div className="mt-6 p-4 border-l-4 border-yellow-600 bg-yellow-50 text-sm text-gray-800">
-        <p><strong className="text-red-700">{country1.name}</strong> (efficiency {country1.efficiency.toFixed(2)}) demonstrates a more balanced ICT innovation portfolio compared to <strong>{country2.name}</strong> (efficiency {country2.efficiency.toFixed(2)}). This suggests <strong>{country1.name}</strong> has developed a more diversified technology ecosystem.</p>
-      </div>
-    </div>
-  );
-};
+// ── HOOK 5: Digital Twin - DISABLED ──────────────────────────────────────
+// The Digital Twin visualization has been disabled due to Recharts ResponsiveContainer sizing issues.
+// Future implementation should use a different charting library or approach.
 
 export default function Visualizations({ countries }: VisualizationsProps) {
   const [activeHook, setActiveHook] = useState<number>(1);
@@ -400,7 +335,6 @@ export default function Visualizations({ countries }: VisualizationsProps) {
     { id: 2, label: '02 · The Peer', subtitle: 'True Comparables' },
     { id: 3, label: '03 · The Trend', subtitle: 'Trajectory Signal' },
     { id: 4, label: '04 · The Location', subtitle: 'Regional Clusters' },
-    { id: 5, label: '05 · The Digital Twin', subtitle: 'Predictive Peer' },
   ];
 
   return (
@@ -429,7 +363,6 @@ export default function Visualizations({ countries }: VisualizationsProps) {
         {activeHook === 2 && <PeerVisualization key={`hook2-${countriesKey}`} countries={countries} />}
         {activeHook === 3 && <TrendVisualization key={`hook3-${countriesKey}`} countries={countries} />}
         {activeHook === 4 && <LocationVisualization key={`hook4-${countriesKey}`} countries={countries} />}
-        {activeHook === 5 && <DigitalTwinVisualization key={`hook5-${countriesKey}`} countries={countries} />}
       </div>
     </div>
   );
