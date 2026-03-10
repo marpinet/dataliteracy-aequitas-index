@@ -369,10 +369,11 @@ const DigitalTwinVisualization = ({ countries }: { countries: Country[] }) => {
 export default function Visualizations({ countries }: VisualizationsProps) {
   const [activeHook, setActiveHook] = useState<number>(1);
 
-  // Create a unique ID based on the actual countries data to force re-renders
-  const countriesKey = countries.length > 0 
-    ? `${countries[0].Economy}-${countries[countries.length - 1].Economy}-${countries.length}`
-    : 'empty';
+  // Create a robust key by hashing all country data
+  const countriesKey = countries
+    .map(c => `${c.Economy}:${c.Input_Score}:${c.Output_Score}`)
+    .join('|')
+    .substring(0, 100); // Keep reasonable length
 
   const hooks = [
     { id: 1, label: '01 · The Outlier', subtitle: 'Hidden Overperformers' },
