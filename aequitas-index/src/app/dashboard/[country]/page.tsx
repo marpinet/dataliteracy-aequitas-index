@@ -97,7 +97,7 @@ export default function CountryDetailPage() {
     );
   }
 
-  const efficiencyScore = calculateEfficiencyScore(country.input_score, country.output_score);
+  const efficiencyScore = calculateEfficiencyScore(country.Input_Score, country.Output_Score);
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
