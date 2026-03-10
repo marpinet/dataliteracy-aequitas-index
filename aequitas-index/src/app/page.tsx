@@ -14,8 +14,7 @@ export default function Home() {
       try {
         const { data: result, error: err } = await supabase
           .from('gii_data')
-          .select('*')
-          .limit(5);
+          .select('*');
         
         if (err) {
           setError(err.message);
